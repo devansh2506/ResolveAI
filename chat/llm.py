@@ -70,6 +70,7 @@ async def call_model(state: ChatState) -> dict:
     # WARNING: real external API call (uses free-tier quota)
     ai_message = await model.ainvoke(state["prompt"])
     if ai_message.tool_calls:
+        ai_message.additional_kwargs.pop("reasoning_content", None)  # Groq rejects it when the message is sent back
         return {"prompt": [ai_message]}
     if not ai_message.content:
         raise RuntimeError("The model returned an empty reply")

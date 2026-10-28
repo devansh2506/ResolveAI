@@ -297,7 +297,9 @@ Create a file named `.env` in the project root. Never commit it.
 ```bash
 # LLM providers
 GROQ_API_KEY=<YOUR_KEY_HERE>
+GROQ_API_KEY2=<YOUR_KEY_HERE>             # optional: a key from a second Groq account, used for web answers
 GEMINI_API_KEY=<YOUR_KEY_HERE>
+GEMINI_API_KEY2=<YOUR_KEY_HERE>           # optional: a second Gemini account, used only by the evals bot
 OPENROUTER_API_KEY=<YOUR_KEY_HERE>        # only used if Groq fails
 
 # Web search

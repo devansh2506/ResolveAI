@@ -22,7 +22,8 @@ class SaveMemoryInput(BaseModel):
         max_length=500,
         description=(
             "One short fact about the user, in third person, understandable on its own. "
-            'Example: "User is a Python developer building a ChatGPT clone."'
+            "Keep the specific names, places and numbers the user gave. "
+            'Examples: "User has two children.", "User prefers metric units.", "User works as a nurse."'
         ),
     )
 
@@ -31,11 +32,14 @@ class SaveMemoryInput(BaseModel):
 def save_memory(content: str) -> str:
     """Save a long-term memory about the user, so future chats can use it.
 
-    Call this ONLY when the user shares something lasting that will help in future chats:
+    Call this whenever the user shares something lasting about themselves or their life, even in passing:
     - who they are: name, job, location, languages, skill level
-    - preferences: how they like answers, tools and tech they use or avoid
-    - ongoing projects and goals
+    - people and pets in their life: partner, children, family, friends, pet names
+    - preferences: how they like answers, things they use, like or avoid
+    - ongoing projects, plans and goals: a purchase, a move, a trip, a job change
     - anything they ask you to remember
+
+    Save one short fact per call. You can call it more than once if the message has several facts.
 
     Do NOT call it for:
     - one-time questions or tasks
@@ -43,8 +47,6 @@ def save_memory(content: str) -> str:
     - things only the assistant said
     - passwords, API keys, card numbers, health details or other sensitive data
     - guesses: save only what the user clearly said
-
-    If nothing is worth saving, do not call this tool.
     """
     # WARNING: writes one new row to public.memories on every call
     vector = embeddings.embed_documents([content])[0]
@@ -62,7 +64,7 @@ class RetrieveMemoryInput(BaseModel):
     query: str = Field(
         min_length=1,
         max_length=300,
-        description='A short search phrase for the information needed, e.g. "user\'s job" or "languages the user codes in".',
+        description='A short search phrase for the information needed, e.g. "user\'s job" or "user\'s food preferences".',
     )
 
 
@@ -70,7 +72,7 @@ class RetrieveMemoryInput(BaseModel):
 def retrieve_memory(query: str) -> str:
     """Search the user's saved long-term memories for facts relevant to the current question.
 
-    Call this ONLY when you need personal information about the user to answer well, for example:
+    Call this when you need personal information about the user to answer well, for example:
     - the user refers to something about themselves or earlier chats ("my project", "as I told you")
     - the answer depends on their preferences, background or setup
     - the user asks what you remember about them
@@ -96,12 +98,12 @@ class WebSearchInput(BaseModel):
         max_length=300,
         description='A short, specific web search query, e.g. "latest Python release" or "weather in Pune today".',
     )
+    # No max_length on purpose: when a model goes over a hard limit, Groq rejects the whole tool call
     context: str = Field(
         min_length=1,
-        max_length=350,
         description=(
-            "About 50 words of background on the user's question: what they want to know and why, "
-            "and any detail from the conversation that helps pick the most useful search results."
+            "Background on the user's question, kept to around 300 to 350 characters (about 50 words): what they "
+            "want to know and why, and any detail from the conversation that helps pick the most useful search results."
         ),
     )
     # Filled in by ToolNode with the graph state; the model never sees or sets it

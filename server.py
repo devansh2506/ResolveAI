@@ -124,7 +124,8 @@ async def run_turn(chat_id: UUID, content: str, use_web: bool) -> AsyncIterator[
                 head = f"Step {step} finished ({took:.1f}s):"
                 if node == "build_prompt":
                     prompt = out["prompt"]
-                    has_summary = "<conversation_summary>" in prompt[0].content
+                    # The instructions mention the opening tag, so only the closing tag shows a real summary was added
+                    has_summary = "</conversation_summary>" in prompt[0].content
                     log.info("%s read the conversation", head)
                     log.info("        %d messages in the prompt, summary of the older chat: %s", len(prompt), "yes" if has_summary else "no")
                     yield _line({"type": "step", "text": "Reading the conversation"})
